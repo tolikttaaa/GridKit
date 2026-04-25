@@ -1,6 +1,9 @@
 # GridKit
 
-![GridKit Logo](GridKit.jpg)
+![GridKit Logo](GridKit.png)
+
+[![CI](https://github.com/tolikttaaa/GridKit/actions/workflows/ci.yml/badge.svg)](https://github.com/tolikttaaa/GridKit/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/tolikttaaa/GridKit/branch/main/graph/badge.svg)](https://codecov.io/gh/tolikttaaa/GridKit)
 
 A Kotlin library providing a unified abstraction layer for tile-based game boards.
 GridKit supports square, hexagonal, and triangular grid topologies through a single,
