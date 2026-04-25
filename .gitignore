@@ -10,6 +10,9 @@ build/
 *.iws
 .DS_Store
 
+# Claude Code
+.claude/
+
 # Kotlin
 *.class
 *.jar
