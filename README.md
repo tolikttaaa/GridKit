@@ -3,7 +3,7 @@
 ![GridKit Logo](GridKit.png)
 
 [![CI](https://github.com/tolikttaaa/GridKit/actions/workflows/ci.yml/badge.svg)](https://github.com/tolikttaaa/GridKit/actions/workflows/ci.yml)
-[![Coverage](.github/badges/jacoco.svg)](gridkit-core/build/reports/jacoco/test/index.html)
+[![Coverage](https://raw.githubusercontent.com/tolikttaaa/GridKit/badges/.github/badges/jacoco.svg)](https://github.com/tolikttaaa/GridKit/actions)
 
 A Kotlin library providing a unified abstraction layer for tile-based game boards.
 GridKit supports square, hexagonal, and triangular grid topologies through a single,
@@ -308,4 +308,4 @@ on `gridkit-visualization`, keeping the core renderer-agnostic.
 ./gradlew build                     # build all modules
 ```
 
-Requires JDK 11+. No external runtime dependencies (stdlib only).
+Requires JDK 21+. No external runtime dependencies (stdlib only).

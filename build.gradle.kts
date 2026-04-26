@@ -15,14 +15,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-        }
-    }
-
-    tasks.withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        jvmToolchain(21)
     }
 
     tasks.withType<Test> {

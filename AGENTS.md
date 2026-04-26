@@ -40,7 +40,7 @@ a single, topology-agnostic `Grid<C, Dir, D>` interface.
 ./gradlew clean build                     # clean then full build
 ```
 
-Requires JDK 11+. No external runtime dependencies (stdlib only).
+Requires JDK 21+. No external runtime dependencies (stdlib only).
 
 ---
 
