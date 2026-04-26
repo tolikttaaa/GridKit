@@ -308,4 +308,4 @@ on `gridkit-visualization`, keeping the core renderer-agnostic.
 ./gradlew build                     # build all modules
 ```
 
-Requires JDK 11+. No external runtime dependencies (stdlib only).
+Requires JDK 21+. No external runtime dependencies (stdlib only).
