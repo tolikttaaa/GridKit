@@ -2,5 +2,6 @@ rootProject.name = "gridkit"
 
 include(
     "gridkit-core",
-    "gridkit-visualization"
+    "gridkit-visualization",
+    "gridkit-playground"
 )

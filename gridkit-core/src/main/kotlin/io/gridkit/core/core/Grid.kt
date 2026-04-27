@@ -43,14 +43,14 @@ interface Grid<C : GridCoordinate, Dir : GridDirection, D> {
      * Finds the shortest path from [from] to [to] using the A* algorithm.
      *
      * @param passable decides whether a cell may be traversed; defaults to all
-     *   non-[CellState.Blocked] cells being passable
+     *   cells being passable
      * @return ordered list of coordinates (including both endpoints),
      *   or null when no path exists
      */
     fun findPath(
         from: C,
         to: C,
-        passable: (Cell<C, D>) -> Boolean = { it.state != CellState.Blocked }
+        passable: (Cell<C, D>) -> Boolean = { true }
     ): List<C>?
 
     /**
@@ -89,9 +89,19 @@ interface Grid<C : GridCoordinate, Dir : GridDirection, D> {
     fun arithmeticCenter(): C
 
     /**
-     * Computes the physical centre of mass of all non-[CellState.Blocked] cells
-     * and returns both the raw physical position and the nearest grid coordinate
-     * as a single [GridCenter] value.
+     * Computes the physical centre of mass of all cells and returns both the
+     * raw physical position and the nearest grid coordinate as a single
+     * [GridCenter] value.
      */
     fun physicalCenter(): GridCenter<C>
+
+    /**
+     * Returns an ASCII-art rendering of this grid with centered cell labels.
+     *
+     * Cells render [Cell.data] with `toString()`, or an empty label when the
+     * data is null.
+     *
+     * @return box-art style ASCII representation for this topology
+     */
+    fun toAsciiString(): String
 }

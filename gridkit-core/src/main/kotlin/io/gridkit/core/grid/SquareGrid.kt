@@ -149,14 +149,46 @@ class SquareGrid<D>(
         SquareCoordinate((minCol + maxCol) / 2, (minRow + maxRow) / 2)
 
     override fun physicalCenter(): GridCenter<SquareCoordinate> {
-        val active = _cells.values.filter { it.state != CellState.Blocked }
-        val physical = if (active.isEmpty()) PhysicalCenter(0.0, 0.0) else {
+        val physical = if (_cells.isEmpty()) PhysicalCenter(0.0, 0.0) else {
             PhysicalCenter(
-                active.sumOf { toPhysical(it.coordinate).x } / active.size,
-                active.sumOf { toPhysical(it.coordinate).y } / active.size
+                _cells.values.sumOf { toPhysical(it.coordinate).x } / _cells.size,
+                _cells.values.sumOf { toPhysical(it.coordinate).y } / _cells.size
             )
         }
         return GridCenter(physical, nearestCoordinate(physical))
+    }
+
+    /** Returns this square grid as shared-border ASCII box art. */
+    override fun toAsciiString(): String {
+        if (_cells.isEmpty()) return "(empty grid)"
+
+        val colRange = minCol..maxCol
+        val rowRange = minRow..maxRow
+        val widths = colRange.associateWith { col ->
+            maxOf(1, rowRange.maxOf { row -> _cells[SquareCoordinate(col, row)].asciiLabel().length }) + 4
+        }
+
+        fun border() = buildString {
+            append('*')
+            for (col in colRange) {
+                append("-".repeat(widths.getValue(col)))
+                append('*')
+            }
+        }
+
+        return buildString {
+            appendLine(border())
+            for (row in rowRange) {
+                append('|')
+                for (col in colRange) {
+                    val label = _cells[SquareCoordinate(col, row)].asciiLabel()
+                    append(label.centered(widths.getValue(col)))
+                    append('|')
+                }
+                appendLine()
+                appendLine(border())
+            }
+        }.trimEnd()
     }
 
     /** Snaps an arbitrary physical position to the nearest existing coordinate. */
@@ -170,4 +202,14 @@ class SquareGrid<D>(
     /** Converts a coordinate to its physical (x, y) position. */
     fun toPhysical(coordinate: SquareCoordinate): PhysicalCenter =
         PhysicalCenter(coordinate.col * cellSize, coordinate.row * cellSize)
+
+    private fun Cell<SquareCoordinate, D>?.asciiLabel(): String =
+        this?.data?.toString().orEmpty()
+
+    private fun String.centered(width: Int): String {
+        if (length >= width) return this
+        val left = (width - length) / 2
+        val right = width - length - left
+        return " ".repeat(left) + this + " ".repeat(right)
+    }
 }

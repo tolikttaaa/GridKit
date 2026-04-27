@@ -22,7 +22,7 @@ a single, topology-agnostic `Grid<C, Dir, D>` interface.
 
 | Package         | Contents                                                         |
 |-----------------|------------------------------------------------------------------|
-| `core/`         | `GridCoordinate`, `Cell`, `CellState`, `Grid`, `PhysicalCenter` |
+| `core/`         | `GridCoordinate`, `Cell`, `Grid`, `PhysicalCenter`              |
 | `grid/`         | `SquareGrid`, `HexGrid`, `TriangleGrid` + direction enums        |
 | `pathfinding/`  | `PathfindingStrategy`, `AStarPathfinder`                         |
 | `dsl/`          | `squareGrid {}`, `hexGrid {}`, `triangleGrid {}` builders        |

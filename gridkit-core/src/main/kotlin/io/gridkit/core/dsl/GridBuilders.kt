@@ -9,19 +9,9 @@ import io.gridkit.core.grid.TriangleGrid
 
 /** DSL scope for configuring a [SquareGrid]. */
 class SquareGridBuilder<D>(private val grid: SquareGrid<D>) {
-    /** Marks [coordinate] as [CellState.Blocked]. */
-    fun block(coordinate: SquareCoordinate) {
-        grid.setCell(coordinate, Cell(coordinate, CellState.Blocked))
-    }
-
-    /** Marks [coordinate] as [CellState.Occupied]. */
-    fun occupy(coordinate: SquareCoordinate) {
-        grid.setCell(coordinate, Cell(coordinate, CellState.Occupied))
-    }
-
     /** Places a cell at [coordinate] with the given [data] payload. */
-    fun place(coordinate: SquareCoordinate, state: CellState = CellState.Empty, data: D? = null) {
-        grid.setCell(coordinate, Cell(coordinate, state, data))
+    fun place(coordinate: SquareCoordinate, data: D? = null) {
+        grid.setCell(coordinate, Cell(coordinate, data))
     }
 }
 
@@ -32,8 +22,8 @@ class SquareGridBuilder<D>(private val grid: SquareGrid<D>) {
  * when you don't need cell payloads.
  *
  * ```kotlin
- * val board = squareGrid<Nothing>(width = 10, height = 10) {
- *     block(SquareCoordinate(3, 3))
+ * val board = squareGrid<String>(width = 10, height = 10) {
+ *     place(SquareCoordinate(3, 3), data = "treasure")
  * }
  * ```
  */
@@ -52,19 +42,9 @@ fun <D> squareGrid(
 
 /** DSL scope for configuring a [HexGrid]. */
 class HexGridBuilder<D>(private val grid: HexGrid<D>) {
-    /** Marks [coordinate] as [CellState.Blocked]. */
-    fun block(coordinate: HexCoordinate) {
-        grid.setCell(coordinate, Cell(coordinate, CellState.Blocked))
-    }
-
-    /** Marks [coordinate] as [CellState.Occupied]. */
-    fun occupy(coordinate: HexCoordinate) {
-        grid.setCell(coordinate, Cell(coordinate, CellState.Occupied))
-    }
-
     /** Places a cell at [coordinate] with the given [data] payload. */
-    fun place(coordinate: HexCoordinate, state: CellState = CellState.Empty, data: D? = null) {
-        grid.setCell(coordinate, Cell(coordinate, state, data))
+    fun place(coordinate: HexCoordinate, data: D? = null) {
+        grid.setCell(coordinate, Cell(coordinate, data))
     }
 }
 
@@ -72,8 +52,8 @@ class HexGridBuilder<D>(private val grid: HexGrid<D>) {
  * Creates a [HexGrid] and applies the [init] DSL.
  *
  * ```kotlin
- * val board = hexGrid<Nothing>(rows = 5, cols = 6) {
- *     block(HexCoordinate(row = 1, col = 2))
+ * val board = hexGrid<String>(rows = 5, cols = 6) {
+ *     place(HexCoordinate(row = 1, col = 2), data = "forest")
  * }
  * ```
  */
@@ -91,19 +71,9 @@ fun <D> hexGrid(
 
 /** DSL scope for configuring a [TriangleGrid]. */
 class TriangleGridBuilder<D>(private val grid: TriangleGrid<D>) {
-    /** Marks [coordinate] as [CellState.Blocked]. */
-    fun block(coordinate: TriangleCoordinate) {
-        grid.setCell(coordinate, Cell(coordinate, CellState.Blocked))
-    }
-
-    /** Marks [coordinate] as [CellState.Occupied]. */
-    fun occupy(coordinate: TriangleCoordinate) {
-        grid.setCell(coordinate, Cell(coordinate, CellState.Occupied))
-    }
-
     /** Places a cell at [coordinate] with the given [data] payload. */
-    fun place(coordinate: TriangleCoordinate, state: CellState = CellState.Empty, data: D? = null) {
-        grid.setCell(coordinate, Cell(coordinate, state, data))
+    fun place(coordinate: TriangleCoordinate, data: D? = null) {
+        grid.setCell(coordinate, Cell(coordinate, data))
     }
 }
 
@@ -115,11 +85,11 @@ class TriangleGridBuilder<D>(private val grid: TriangleGrid<D>) {
  * ```
  */
 fun <D> triangleGrid(
-    width: Int,
-    height: Int,
+    cols: Int,
+    rows: Int,
     init: TriangleGridBuilder<D>.() -> Unit = {}
 ): TriangleGrid<D> {
-    val grid = TriangleGrid<D>(width, height)
+    val grid = TriangleGrid<D>(cols, rows)
     TriangleGridBuilder(grid).init()
     return grid
 }

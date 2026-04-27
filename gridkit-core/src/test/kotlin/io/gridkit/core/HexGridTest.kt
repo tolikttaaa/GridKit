@@ -152,9 +152,9 @@ class HexGridTest {
     // ── DSL ───────────────────────────────────────────────────────────────────
 
     @Test
-    fun `DSL builder blocks cells`() {
-        val grid = hexGrid<Nothing>(5, 5) { block(HexCoordinate(2, 2)) }
-        assertEquals(CellState.Blocked, grid.getCell(HexCoordinate(2, 2))?.state)
+    fun `DSL builder places cell data`() {
+        val grid = hexGrid<String>(5, 5) { place(HexCoordinate(2, 2), data = "X") }
+        assertEquals("X", grid.getCell(HexCoordinate(2, 2))?.data)
     }
 
     @Test

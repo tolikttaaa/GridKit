@@ -13,12 +13,20 @@ data class SquareCoordinate(val col: Int, val row: Int) : GridCoordinate
  */
 data class HexCoordinate(val row: Int, val col: Int) : GridCoordinate
 
-/** Direction of a triangle cell within its row/col slot. */
-enum class TriangleDirection { UP, DOWN }
+/**
+ * Coordinate on a triangular grid.
+ *
+ * The pointing direction is encoded in [col] parity:
+ * - **even col** → UP-pointing triangle (apex at top)
+ * - **odd col**  → DOWN-pointing triangle (apex at bottom)
+ *
+ * Adjacent columns in the same row share a diagonal edge; the VERTICAL neighbor
+ * lives in the row above (for UP) or below (for DOWN).
+ */
+data class TriangleCoordinate(val col: Int, val row: Int) : GridCoordinate
 
-/** Coordinate on a triangular grid. */
-data class TriangleCoordinate(
-    val col: Int,
-    val row: Int,
-    val pointing: TriangleDirection
-) : GridCoordinate
+/** Returns true when this triangle is UP-pointing (even [TriangleCoordinate.col]). */
+val TriangleCoordinate.isUp: Boolean get() = col % 2 == 0
+
+/** Returns true when this triangle is DOWN-pointing (odd [TriangleCoordinate.col]). */
+val TriangleCoordinate.isDown: Boolean get() = col % 2 != 0
