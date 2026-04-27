@@ -2,7 +2,6 @@ package io.gridkit.playground.examples
 
 import io.gridkit.core.dsl.triangleGrid
 import io.gridkit.core.core.TriangleCoordinate
-import io.gridkit.core.core.isUp
 import io.gridkit.playground.minesweeper.MinesweeperGame
 import io.gridkit.playground.minesweeper.MinesweeperGame.Visibility
 import kotlin.random.Random
@@ -33,21 +32,19 @@ private fun renderTriangle(game: MinesweeperGame<TriangleCoordinate, *>): String
     val coords = game.grid.cells.keys.filterIsInstance<TriangleCoordinate>()
     val maxCol = coords.maxOf { it.col }
     val maxRow = coords.maxOf { it.row }
-    for (row in 0..maxRow) {
-        for (col in 0..maxCol) {
-            val info = game.info(TriangleCoordinate(col, row))
-            val up = col % 2 == 0
-            append(cellGlyph(info, up))
+    val renderGrid = triangleGrid<String>(cols = maxCol + 1, rows = maxRow + 1) {
+        for (coordinate in coords) {
+            place(coordinate, data = cellLabel(game.info(coordinate)))
         }
-        append('\n')
     }
-}.trimEnd()
+    append(renderGrid.toAsciiString())
+}
 
-private fun cellGlyph(info: MinesweeperGame.CellInfo?, isUp: Boolean): String = when {
+private fun cellLabel(info: MinesweeperGame.CellInfo?): String = when {
     info == null                           -> " "
     info.visibility == Visibility.FLAGGED  -> "F"
-    info.visibility == Visibility.HIDDEN   -> if (isUp) "^" else "v"
+    info.visibility == Visibility.HIDDEN   -> "?"
     info.isMine                            -> "*"
     info.adjacentMines > 0                 -> info.adjacentMines.toString()
-    else                                   -> if (isUp) "/" else "\\"
+    else                                   -> "."
 }

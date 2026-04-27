@@ -7,9 +7,8 @@ import io.gridkit.playground.examples.triangleMinesweeperDemo
 /**
  * Runs Minesweeper demos on all three grid topologies.
  *
- * Each demo uses the same [MinesweeperGame] engine — only the grid and
- * the topology-specific renderer differ, showing that game logic is
- * fully decoupled from the underlying grid type.
+ * Each demo uses the same [MinesweeperGame] engine and delegates console
+ * rendering to each grid's `toAsciiString()` implementation.
  */
 fun main() {
     println(squareMinesweeperDemo())

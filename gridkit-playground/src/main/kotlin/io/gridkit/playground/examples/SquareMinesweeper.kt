@@ -30,15 +30,15 @@ private fun renderSquare(game: MinesweeperGame<SquareCoordinate, *>): String = b
     val coords = game.grid.cells.keys.filterIsInstance<SquareCoordinate>()
     val maxCol = coords.maxOf { it.col }
     val maxRow = coords.maxOf { it.row }
-    for (row in 0..maxRow) {
-        for (col in 0..maxCol) {
-            append(cellGlyph(game.info(SquareCoordinate(col, row))))
+    val renderGrid = squareGrid<String>(width = maxCol + 1, height = maxRow + 1) {
+        for (coordinate in coords) {
+            place(coordinate, data = cellLabel(game.info(coordinate)))
         }
-        append('\n')
     }
-}.trimEnd()
+    append(renderGrid.toAsciiString())
+}
 
-private fun cellGlyph(info: MinesweeperGame.CellInfo?): String = when {
+private fun cellLabel(info: MinesweeperGame.CellInfo?): String = when {
     info == null                           -> " "
     info.visibility == Visibility.FLAGGED  -> "F"
     info.visibility == Visibility.HIDDEN   -> "?"

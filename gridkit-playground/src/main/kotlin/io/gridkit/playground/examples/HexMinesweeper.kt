@@ -30,17 +30,15 @@ private fun renderHex(game: MinesweeperGame<HexCoordinate, *>): String = buildSt
     val coords = game.grid.cells.keys.filterIsInstance<HexCoordinate>()
     val maxRow = coords.maxOf { it.row }
     val maxCol = coords.maxOf { it.col }
-    for (row in 0..maxRow) {
-        if (row % 2 != 0) append(" ")       // odd-row stagger
-        for (col in 0..maxCol) {
-            append(cellGlyph(game.info(HexCoordinate(row, col))))
-            append(' ')
+    val renderGrid = hexGrid<String>(rows = maxRow + 1, cols = maxCol + 1) {
+        for (coordinate in coords) {
+            place(coordinate, data = cellLabel(game.info(coordinate)))
         }
-        append('\n')
     }
-}.trimEnd()
+    append(renderGrid.toAsciiString())
+}
 
-private fun cellGlyph(info: MinesweeperGame.CellInfo?): String = when {
+private fun cellLabel(info: MinesweeperGame.CellInfo?): String = when {
     info == null                           -> " "
     info.visibility == Visibility.FLAGGED  -> "F"
     info.visibility == Visibility.HIDDEN   -> "?"
