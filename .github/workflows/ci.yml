@@ -49,10 +49,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           cp -r .github/badges /tmp/badges
-          git fetch origin badges --depth=1 2>/dev/null && git checkout badges \
-            || { git checkout --orphan badges && git rm -rf .; }
+          rm -rf .github/badges
+
+          if git ls-remote --exit-code --heads origin badges >/dev/null 2>&1; then
+            git fetch origin badges --depth=1
+            git switch -C badges FETCH_HEAD
+          else
+            git switch --orphan badges
+            git rm -rf . || true
+          fi
+
           mkdir -p .github/badges
           cp /tmp/badges/*.svg .github/badges/
           git add .github/badges/
           git diff --cached --quiet || git commit -m "chore: update coverage badge"
-          git push origin badges
+          git push origin HEAD:badges
