@@ -247,7 +247,9 @@ println(grid.toAsciiMap())
 
 `toAsciiString()` is implemented by each concrete grid type and renders square,
 hexagonal, and triangular grids with shared ASCII borders. Cells use
-`cell.data?.toString().orEmpty()` as their center label.
+`cell.data?.toString().orEmpty()` as their center label. See
+[ASCII_RENDERING.md](ASCII_RENDERING.md) for the renderer layout rules and
+full examples.
 
 ---
 
