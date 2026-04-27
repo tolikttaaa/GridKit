@@ -149,9 +149,9 @@ class TriangleGridTest {
 
     // ── DSL / data ────────────────────────────────────────────────────────────
 
-    @Test fun `DSL builder blocks cells`() {
-        val grid = triangleGrid<Nothing>(8, 4) { block(TriangleCoordinate(3, 2)) }
-        assertEquals(CellState.Blocked, grid.getCell(TriangleCoordinate(3, 2))?.state)
+    @Test fun `DSL builder places cell data`() {
+        val grid = triangleGrid<String>(8, 4) { place(TriangleCoordinate(3, 2), data = "X") }
+        assertEquals("X", grid.getCell(TriangleCoordinate(3, 2))?.data)
     }
 
     @Test fun `cell carries typed data payload`() {

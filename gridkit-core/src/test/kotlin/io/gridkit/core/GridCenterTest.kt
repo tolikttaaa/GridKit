@@ -1,8 +1,6 @@
 package io.gridkit.core
 
 import io.gridkit.core.core.*
-import io.gridkit.core.dsl.hexGrid
-import io.gridkit.core.dsl.squareGrid
 import io.gridkit.core.extensions.flood
 import io.gridkit.core.extensions.isConnected
 import io.gridkit.core.grid.HexGrid
@@ -10,7 +8,6 @@ import io.gridkit.core.grid.SquareGrid
 import io.gridkit.core.grid.TriangleGrid
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GridCenterTest {
@@ -51,13 +48,13 @@ class GridCenterTest {
         assertEquals(SquareCoordinate(1, 1), c.coordinate)
     }
 
-    @Test fun `physicalCenter excludes blocked cells`() {
-        val grid = squareGrid<Nothing>(3, 3) { block(SquareCoordinate(0, 0)) }
-        assertTrue(grid.physicalCenter().physical.x > 1.0)
+    @Test fun `physicalCenter includes all cells`() {
+        val grid = SquareGrid<Nothing>(3, 3)
+        assertEquals(1.0, grid.physicalCenter().physical.x, 1e-9)
     }
 
     @Test fun `physicalCenter coordinate is always valid`() {
-        val grid = squareGrid<Nothing>(3, 3) { block(SquareCoordinate(0, 0)) }
+        val grid = SquareGrid<Nothing>(3, 3)
         assertTrue(grid.isValidCoordinate(grid.physicalCenter().coordinate))
     }
 
@@ -89,9 +86,11 @@ class GridCenterTest {
     @Test fun `flood fill reaches all cells on open grid`() =
         assertEquals(9, SquareGrid<Nothing>(3, 3).flood(SquareCoordinate(0, 0)).size)
 
-    @Test fun `flood fill stops at blocked cells`() {
-        val grid = squareGrid<Nothing>(5, 1) { block(SquareCoordinate(2, 0)) }
-        assertEquals(2, grid.flood(SquareCoordinate(0, 0)).size)
+    @Test fun `flood fill respects custom predicate`() {
+        val grid = SquareGrid<Nothing>(5, 1)
+        assertEquals(2, grid.flood(SquareCoordinate(0, 0)) { cell ->
+            cell.coordinate != SquareCoordinate(2, 0)
+        }.size)
     }
 
     @Test fun `flood fill with custom predicate`() {
@@ -104,17 +103,6 @@ class GridCenterTest {
     // ── isConnected ───────────────────────────────────────────────────────────
 
     @Test fun `open square grid is connected`() = assertTrue(SquareGrid<Nothing>(4, 4).isConnected())
-
-    @Test fun `grid split by wall is not connected`() =
-        assertFalse(squareGrid<Nothing>(5, 1) { block(SquareCoordinate(2, 0)) }.isConnected())
-
-    @Test fun `all-blocked grid is vacuously connected`() {
-        val grid = squareGrid<Nothing>(2, 2) {
-            block(SquareCoordinate(0, 0)); block(SquareCoordinate(1, 0))
-            block(SquareCoordinate(0, 1)); block(SquareCoordinate(1, 1))
-        }
-        assertTrue(grid.isConnected())
-    }
 
     @Test fun `triangle grid is connected`() = assertTrue(TriangleGrid<Nothing>(6, 3).isConnected())
 

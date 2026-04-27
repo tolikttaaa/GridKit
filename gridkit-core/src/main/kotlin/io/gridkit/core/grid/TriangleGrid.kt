@@ -143,12 +143,73 @@ class TriangleGrid<D>(
         TriangleCoordinate((minCol + maxCol) / 2, (minRow + maxRow) / 2)
 
     override fun physicalCenter(): GridCenter<TriangleCoordinate> {
-        val active = _cells.values.filter { it.state != CellState.Blocked }
-        val physical = if (active.isEmpty()) PhysicalCenter(0.0, 0.0) else PhysicalCenter(
-            active.sumOf { toPhysical(it.coordinate).x } / active.size,
-            active.sumOf { toPhysical(it.coordinate).y } / active.size
+        val physical = if (_cells.isEmpty()) PhysicalCenter(0.0, 0.0) else PhysicalCenter(
+            _cells.values.sumOf { toPhysical(it.coordinate).x } / _cells.size,
+            _cells.values.sumOf { toPhysical(it.coordinate).y } / _cells.size
         )
         return GridCenter(physical, nearestCoordinate(physical))
+    }
+
+    /** Returns this triangular grid as alternating ASCII box art. */
+    override fun toAsciiString(): String {
+        if (_cells.isEmpty()) return "(empty grid)"
+
+        val colRange = minCol..maxCol
+        val rowRange = minRow..maxRow
+        val innerWidths = colRange.associateWith { col ->
+            maxOf(5, rowRange.maxOf { row -> _cells[TriangleCoordinate(col, row)].asciiLabel().length } + 4)
+        }
+
+        fun isVisualUp(col: Int, row: Int): Boolean = (col + row) % 2 == 0
+
+        fun top(row: Int) = buildString {
+            for (col in colRange) {
+                val width = innerWidths.getValue(col)
+                if (isVisualUp(col, row)) {
+                    if (col == colRange.first) append("  ")
+                    append("*".repeat(if (col == colRange.first) width else width - 1))
+                } else {
+                    append("-".repeat(width + 2))
+                    append('*')
+                }
+            }
+        }.trimEnd()
+
+        fun middle(row: Int) = buildString {
+            for (col in colRange) {
+                val coordinate = TriangleCoordinate(col, row)
+                val label = _cells[coordinate].asciiLabel()
+                val body = label.centered(innerWidths.getValue(col))
+                if (isVisualUp(col, row) && col == colRange.first) append(" /").append(body).append("\\")
+                else if (isVisualUp(col, row)) append(body).append("\\")
+                else if (col == colRange.first) append(" \\").append(body).append("/")
+                else append(body).append("/")
+            }
+        }.trimEnd()
+
+        fun bottom(row: Int) = buildString {
+            for (col in colRange) {
+                val width = innerWidths.getValue(col)
+                if (isVisualUp(col, row)) {
+                    if (col == colRange.first) append('*')
+                    append("-".repeat(width + 2))
+                    append('*')
+                } else if (col == colRange.first) {
+                    append("  ")
+                    append("*".repeat(width))
+                } else {
+                    append("*".repeat(width - 1))
+                }
+            }
+        }.trimEnd()
+
+        return buildString {
+            appendLine(top(rowRange.first))
+            for (row in rowRange) {
+                appendLine(middle(row))
+                appendLine(bottom(row))
+            }
+        }.trimEnd()
     }
 
     /** Snaps an arbitrary physical position to the nearest existing coordinate. */
@@ -171,5 +232,15 @@ class TriangleGrid<D>(
         val x = slot * 0.5 + if (coordinate.isUp) 0.166 else 0.333
         val y = coordinate.row * triHeight + if (coordinate.isUp) 0.333 else 0.666
         return PhysicalCenter(x, y)
+    }
+
+    private fun Cell<TriangleCoordinate, D>?.asciiLabel(): String =
+        this?.data?.toString().orEmpty()
+
+    private fun String.centered(width: Int): String {
+        if (length >= width) return this
+        val left = (width - length) / 2
+        val right = width - length - left
+        return " ".repeat(left) + this + " ".repeat(right)
     }
 }

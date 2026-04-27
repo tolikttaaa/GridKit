@@ -16,13 +16,13 @@ regardless of the underlying grid type.
 
 ```kotlin
 // Square grid — chess / minesweeper style
-val board = squareGrid<Nothing>(width = 8, height = 8) {
-    block(SquareCoordinate(3, 3))
+val board = squareGrid<String>(width = 8, height = 8) {
+    place(SquareCoordinate(3, 3), data = "M")
 }
 
 // Hexagonal grid — Catan / hex-strategy style
-val hexBoard = hexGrid<Nothing>(rows = 5, cols = 6) {
-    block(HexCoordinate(row = 1, col = 2))
+val hexBoard = hexGrid<String>(rows = 5, cols = 6) {
+    place(HexCoordinate(row = 1, col = 2), data = "forest")
 }
 
 // Triangular grid — even col = UP /\, odd col = DOWN \/
@@ -40,7 +40,10 @@ val path = board.findPath(SquareCoordinate(0, 0), SquareCoordinate(7, 7))
 val reachable = board.flood(SquareCoordinate(0, 0))
 println("Connected: ${board.isConnected()}")
 
-// ASCII debug map
+// ASCII box-art renderer
+println(board.toAsciiString())
+
+// Compact ASCII debug map
 println(board.toAsciiMap())
 ```
 
@@ -156,11 +159,9 @@ data class Terrain(val elevation: Int, val biome: String)
 
 val map = hexGrid<Terrain>(rows = 5, cols = 6) {
     place(HexCoordinate(2, 3), data = Terrain(elevation = 500, biome = "forest"))
-    block(HexCoordinate(0, 0))
 }
 
 map.getCell(HexCoordinate(2, 3))?.data   // Terrain(500, "forest")
-map.getCell(HexCoordinate(0, 0))?.state  // CellState.Blocked
 ```
 
 Use `<Nothing>` when you don't need per-cell data.
@@ -202,11 +203,10 @@ the nearest coordinate in one call — no need to call two separate methods:
 
 ```kotlin
 val center = hexGrid<Nothing>(rows = 4, cols = 6) {
-    block(HexCoordinate(0, 0))
 }.physicalCenter()
 
-center.physical.x   // average x of all non-Blocked cells
-center.physical.y   // average y of all non-Blocked cells
+center.physical.x   // average x of all cells
+center.physical.y   // average y of all cells
 center.coordinate   // nearest HexCoordinate to that position
 ```
 
@@ -217,9 +217,9 @@ center.coordinate   // nearest HexCoordinate to that position
 A* with the grid's own `distance()` as heuristic — works on all topologies:
 
 ```kotlin
-val path = grid.findPath(from, to)                   // default: skip Blocked cells
+val path = grid.findPath(from, to)                   // default: every cell is passable
 val path = grid.findPath(from, to) { cell ->         // custom predicate
-    cell.state != CellState.Blocked && cell.data?.passable == true
+    cell.data?.passable == true
 }
 // Returns null when no path exists
 ```
@@ -233,21 +233,29 @@ import io.gridkit.core.extensions.*
 
 // Flood fill
 val reachable: Set<C> = grid.flood(start)
-val reachable = grid.flood(start) { cell -> cell.state == CellState.Empty }
+val reachable = grid.flood(start) { cell -> cell.data?.passable == true }
 
 // Connectivity
 val ok: Boolean = grid.isConnected()
 
+// ASCII box-art renderer
+println(grid.toAsciiString())
+
 // ASCII debug map
 println(grid.toAsciiMap())
 ```
+
+`toAsciiString()` is implemented by each concrete grid type and renders square,
+hexagonal, and triangular grids with shared ASCII borders. Cells use
+`cell.data?.toString().orEmpty()` as their center label.
 
 ---
 
 ## Playground — Minesweeper Examples
 
 The `gridkit-playground` module demonstrates library usage with a topology-agnostic
-Minesweeper implementation that runs on all three grid types:
+Minesweeper implementation that runs on all three grid types and renders each
+demo through the grid's `toAsciiString()` implementation:
 
 ```
 gridkit-playground/
@@ -288,6 +296,7 @@ Run with:
 | `placeNext(C, Dir): Cell<C, D>` | Add adjacent cell, expand grid |
 | `arithmeticCenter(): C` | Bounding-box centre coordinate |
 | `physicalCenter(): GridCenter<C>` | Physical centre + nearest coordinate |
+| `toAsciiString(): String` | ASCII box-art renderer |
 
 ### Type Parameters
 
@@ -305,7 +314,7 @@ Run with:
 gridkit/
 ├── gridkit-core/           ← Pure grid logic, zero UI dependencies
 │   └── io.gridkit.core
-│       ├── core/           GridCoordinate, GridDirection, Cell, CellState,
+│       ├── core/           GridCoordinate, GridDirection, Cell,
 │       │                   Grid, GridCenter, PhysicalCenter
 │       ├── grid/           SquareGrid, HexGrid, TriangleGrid (+ direction enums)
 │       ├── pathfinding/    PathfindingStrategy, AStarPathfinder
@@ -323,9 +332,9 @@ gridkit/
 ## Building
 
 ```bash
-./gradlew :gridkit-core:test              # run core tests (106 tests)
+./gradlew :gridkit-core:test              # run core tests
 ./gradlew :gridkit-playground:run         # run Minesweeper demos
 ./gradlew build                           # compile + test all modules
 ```
 
-Requires JDK 11+. No external runtime dependencies (stdlib only).
+Requires JDK 21+. No external runtime dependencies (stdlib only).

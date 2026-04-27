@@ -8,7 +8,7 @@ import io.gridkit.core.core.*
  */
 fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.flood(
     start: C,
-    predicate: (Cell<C, D>) -> Boolean = { it.state != CellState.Blocked }
+    predicate: (Cell<C, D>) -> Boolean = { true }
 ): Set<C> {
     val startCell = getCell(start) ?: return emptySet()
     if (!predicate(startCell)) return emptySet()
@@ -28,13 +28,11 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.flood(
 }
 
 /**
- * Returns true when every non-[CellState.Blocked] cell is reachable from every
- * other non-[CellState.Blocked] cell (the traversable sub-graph is fully connected).
+ * Returns true when every cell is reachable from every other cell.
  */
 fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.isConnected(): Boolean {
-    val passable = cells.values.filter { it.state != CellState.Blocked }
-    if (passable.isEmpty()) return true
-    return flood(passable.first().coordinate).size == passable.size
+    if (cells.isEmpty()) return true
+    return flood(cells.values.first().coordinate).size == cells.size
 }
 
 /**
@@ -43,17 +41,12 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.isConnected(): 
  * - **Square** grids render as a compact 2-D character grid.
  * - **Hex** grids render with the odd-row half-step offset.
  * - **Triangle** grids render each row as a sequence of `/\` and `\/` glyphs.
- * - Other topologies list `coordinate → state` pairs.
+ * - Other topologies list `coordinate → data` pairs.
  */
 fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): String {
     if (cells.isEmpty()) return "(empty grid)"
 
-    fun CellState?.glyph() = when (this) {
-        CellState.Empty    -> "."
-        CellState.Occupied -> "O"
-        CellState.Blocked  -> "#"
-        null               -> " "
-    }
+    fun Cell<*, *>?.glyph() = this?.data?.toString()?.firstOrNull()?.toString() ?: "."
 
     return when (cells.keys.first()) {
         is SquareCoordinate -> {
@@ -64,7 +57,7 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
             buildString {
                 for (row in rows.min()..rows.max()) {
                     for (col in cols.min()..cols.max())
-                        append(sq[SquareCoordinate(col, row)]?.state.glyph())
+                        append(sq[SquareCoordinate(col, row)].glyph())
                     append('\n')
                 }
             }.trimEnd()
@@ -79,7 +72,7 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
                 for (row in rows.min()..rows.max()) {
                     if (row % 2 != 0) append(" ")
                     for (col in cols.min()..cols.max()) {
-                        append(hex[HexCoordinate(row, col)]?.state.glyph())
+                        append(hex[HexCoordinate(row, col)].glyph())
                         append(' ')
                     }
                     append('\n')
@@ -97,11 +90,7 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
                     for (col in cols.min()..cols.max()) {
                         val cell = tri[TriangleCoordinate(col, row)]
                         val isUp = col % 2 == 0
-                        append(when (cell?.state) {
-                            CellState.Blocked  -> if (isUp) "X" else "X"
-                            CellState.Occupied -> if (isUp) "^" else "v"
-                            else               -> if (isUp) "/" else "\\"
-                        })
+                        append(cell?.data?.toString()?.firstOrNull() ?: if (isUp) '/' else '\\')
                     }
                     append('\n')
                 }
@@ -110,7 +99,7 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
 
         else -> buildString {
             cells.entries.sortedWith(compareBy { it.key.toString() })
-                .forEach { (coord, cell) -> appendLine("$coord → ${cell.state}") }
+                .forEach { (coord, cell) -> appendLine("$coord -> ${cell.data}") }
         }.trimEnd()
     }
 }

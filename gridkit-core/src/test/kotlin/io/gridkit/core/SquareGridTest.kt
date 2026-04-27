@@ -136,9 +136,9 @@ class SquareGridTest {
     }
 
     @Test
-    fun `DSL builder blocks cells`() {
-        val grid = squareGrid<Nothing>(5, 5) { block(SquareCoordinate(2, 2)) }
-        assertEquals(CellState.Blocked, grid.getCell(SquareCoordinate(2, 2))?.state)
+    fun `DSL builder places cell data`() {
+        val grid = squareGrid<String>(5, 5) { place(SquareCoordinate(2, 2), data = "X") }
+        assertEquals("X", grid.getCell(SquareCoordinate(2, 2))?.data)
     }
 
     @Test

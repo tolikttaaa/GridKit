@@ -1,8 +1,6 @@
 package io.gridkit.core
 
 import io.gridkit.core.core.*
-import io.gridkit.core.dsl.hexGrid
-import io.gridkit.core.dsl.squareGrid
 import io.gridkit.core.grid.HexGrid
 import io.gridkit.core.grid.SquareGrid
 import io.gridkit.core.grid.TriangleGrid
@@ -33,28 +31,37 @@ class PathfindingTest {
 
     @Test
     fun `path goes around obstacle`() {
-        val grid = squareGrid<Nothing>(5, 5) {
-            block(SquareCoordinate(1, 0))
-            block(SquareCoordinate(1, 1))
-            block(SquareCoordinate(1, 2))
+        val grid = SquareGrid<Nothing>(5, 5)
+        val blocked = setOf(
+            SquareCoordinate(1, 0),
+            SquareCoordinate(1, 1),
+            SquareCoordinate(1, 2)
+        )
+        val path = grid.findPath(SquareCoordinate(0, 0), SquareCoordinate(2, 0)) { cell ->
+            cell.coordinate !in blocked
         }
-        val path = grid.findPath(SquareCoordinate(0, 0), SquareCoordinate(2, 0))
         assertNotNull(path)
-        assertTrue(path.none { grid.getCell(it)?.state == CellState.Blocked })
+        assertTrue(path.none { it in blocked })
         assertEquals(SquareCoordinate(0, 0), path.first())
         assertEquals(SquareCoordinate(2, 0), path.last())
     }
 
     @Test
-    fun `returns null when destination is blocked`() {
-        val grid = squareGrid<Nothing>(5, 5) { block(SquareCoordinate(4, 4)) }
-        assertNull(grid.findPath(SquareCoordinate(0, 0), SquareCoordinate(4, 4)))
+    fun `returns null when destination is not passable`() {
+        val grid = SquareGrid<Nothing>(5, 5)
+        val destination = SquareCoordinate(4, 4)
+        assertNull(grid.findPath(SquareCoordinate(0, 0), destination) { cell ->
+            cell.coordinate != destination
+        })
     }
 
     @Test
-    fun `returns null when path is fully blocked`() {
-        val grid = squareGrid<Nothing>(5, 1) { block(SquareCoordinate(2, 0)) }
-        assertNull(grid.findPath(SquareCoordinate(0, 0), SquareCoordinate(4, 0)))
+    fun `returns null when path is fully blocked by predicate`() {
+        val grid = SquareGrid<Nothing>(5, 1)
+        val blocked = SquareCoordinate(2, 0)
+        assertNull(grid.findPath(SquareCoordinate(0, 0), SquareCoordinate(4, 0)) { cell ->
+            cell.coordinate != blocked
+        })
     }
 
     @Test
@@ -83,12 +90,17 @@ class PathfindingTest {
 
     @Test
     fun `hex path returns null through complete wall`() {
-        val grid = hexGrid<Nothing>(5, 5) {
-            block(HexCoordinate(2, 0)); block(HexCoordinate(2, 1))
-            block(HexCoordinate(2, 2)); block(HexCoordinate(2, 3))
-            block(HexCoordinate(2, 4))
-        }
-        assertNull(grid.findPath(HexCoordinate(0, 2), HexCoordinate(4, 2)))
+        val grid = HexGrid<Nothing>(5, 5)
+        val wall = setOf(
+            HexCoordinate(2, 0),
+            HexCoordinate(2, 1),
+            HexCoordinate(2, 2),
+            HexCoordinate(2, 3),
+            HexCoordinate(2, 4)
+        )
+        assertNull(grid.findPath(HexCoordinate(0, 2), HexCoordinate(4, 2)) { cell ->
+            cell.coordinate !in wall
+        })
     }
 
     // ── Triangle pathfinding ──────────────────────────────────────────────────

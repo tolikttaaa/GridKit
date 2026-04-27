@@ -174,14 +174,119 @@ class HexGrid<D>(
         HexCoordinate((minRow + maxRow) / 2, (minCol + maxCol) / 2)
 
     override fun physicalCenter(): GridCenter<HexCoordinate> {
-        val active = _cells.values.filter { it.state != CellState.Blocked }
-        val physical = if (active.isEmpty()) PhysicalCenter(0.0, 0.0) else {
+        val physical = if (_cells.isEmpty()) PhysicalCenter(0.0, 0.0) else {
             PhysicalCenter(
-                active.sumOf { toPhysical(it.coordinate).x } / active.size,
-                active.sumOf { toPhysical(it.coordinate).y } / active.size
+                _cells.values.sumOf { toPhysical(it.coordinate).x } / _cells.size,
+                _cells.values.sumOf { toPhysical(it.coordinate).y } / _cells.size
             )
         }
         return GridCenter(physical, nearestCoordinate(physical))
+    }
+
+    /** Returns this hex grid as staggered ASCII box art. */
+    override fun toAsciiString(): String {
+        if (_cells.isEmpty()) return "(empty grid)"
+
+        val rowRange = minRow..maxRow
+        val colRange = minCol..maxCol
+        val dashWidths = colRange.associateWith { col ->
+            maxOf(1, rowRange.maxOf { row -> _cells[HexCoordinate(row, col)].asciiLabel().length })
+        }
+        val indent = " ".repeat((dashWidths.values.max() + 3) / 2)
+
+        fun topOrBottom(row: Int) = buildString {
+            if (row % 2 != 0) append(indent)
+            if (row % 2 != 0) append("  ")
+            for (col in colRange) {
+                val dash = dashWidths.getValue(col)
+                append("  *")
+                append("-".repeat(dash))
+                append("*   ")
+            }
+        }.trimEnd()
+
+        fun upper(row: Int) = buildString {
+            if (row % 2 != 0) append(indent)
+            for (col in colRange) {
+                append(" /")
+                append(" ".repeat(dashWidths.getValue(col) + 2))
+                append("\\  ")
+            }
+        }.trimEnd()
+
+        fun transitionUpper() = buildString {
+            for (col in colRange) {
+                append(" /")
+                append(" ".repeat(dashWidths.getValue(col) + 2))
+                append("\\  ")
+            }
+            append(" /")
+        }.trimEnd()
+
+        fun middle(row: Int) = buildString {
+            if (row % 2 != 0) append(indent)
+            for (col in colRange) {
+                val label = _cells[HexCoordinate(row, col)].asciiLabel()
+                val body = label.centered(dashWidths.getValue(col) + 4)
+                if (col == colRange.first) append("*") else append("-*")
+                append(body)
+                append("*")
+            }
+            if (row % 2 == 0 && minRow < maxRow) {
+                append("-*")
+            }
+        }
+
+        fun lower(row: Int) = buildString {
+            if (row % 2 != 0) append(indent)
+            if (row % 2 != 0) append("  ")
+            for (col in colRange) {
+                append(" \\")
+                append(" ".repeat(dashWidths.getValue(col) + 2))
+                append("/  ")
+            }
+            if (row < maxRow && row % 2 == 0) {
+                append(" \\")
+            }
+        }.trimEnd()
+
+        fun sharedOddRowMiddle(row: Int) = buildString {
+            append("  ")
+            for (col in colRange) {
+                val dash = dashWidths.getValue(col)
+                val label = _cells[HexCoordinate(row, col)].asciiLabel()
+                append("*")
+                append("-".repeat(dash))
+                append("*")
+                append(label.centered(dash + 4))
+            }
+            append("*")
+        }
+
+        return buildString {
+            for (row in rowRange) {
+                if (row == minRow) {
+                    appendLine(topOrBottom(row))
+                    appendLine(upper(row))
+                    appendLine(middle(row))
+                } else if (row % 2 != 0) {
+                    appendLine(sharedOddRowMiddle(row))
+                    if (row == maxRow) {
+                        appendLine(lower(row))
+                        appendLine(topOrBottom(row))
+                    } else {
+                        appendLine(transitionUpper())
+                    }
+                    continue
+                } else {
+                    appendLine(middle(row))
+                }
+                appendLine(lower(row))
+                if (row == maxRow) {
+                    appendLine(topOrBottom(row))
+                }
+            }
+        }.trimEnd()
     }
 
     /** Snaps an arbitrary physical position to the nearest existing coordinate. */
@@ -202,5 +307,15 @@ class HexGrid<D>(
         val x = coordinate.col * hexWidth + if (coordinate.row % 2 != 0) hexWidth / 2.0 else 0.0
         val y = coordinate.row * hexHeight * 0.75
         return PhysicalCenter(x, y)
+    }
+
+    private fun Cell<HexCoordinate, D>?.asciiLabel(): String =
+        this?.data?.toString().orEmpty()
+
+    private fun String.centered(width: Int): String {
+        if (length >= width) return this
+        val left = (width - length) / 2
+        val right = width - length - left
+        return " ".repeat(left) + this + " ".repeat(right)
     }
 }
