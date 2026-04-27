@@ -12,11 +12,9 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.flood(
 ): Set<C> {
     val startCell = getCell(start) ?: return emptySet()
     if (!predicate(startCell)) return emptySet()
-
     val visited = mutableSetOf(start)
     val queue = ArrayDeque<C>()
     queue.add(start)
-
     while (queue.isNotEmpty()) {
         val current = queue.removeFirst()
         for (neighbor in getNeighbors(current)) {
@@ -30,9 +28,8 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.flood(
 }
 
 /**
- * Returns true when every non-[CellState.Blocked] cell is reachable from
- * every other non-[CellState.Blocked] cell (the traversable sub-graph is
- * fully connected).
+ * Returns true when every non-[CellState.Blocked] cell is reachable from every
+ * other non-[CellState.Blocked] cell (the traversable sub-graph is fully connected).
  */
 fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.isConnected(): Boolean {
     val passable = cells.values.filter { it.state != CellState.Blocked }
@@ -42,7 +39,11 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.isConnected(): 
 
 /**
  * Returns a human-readable ASCII map of the grid.
- * Square and hex grids render as 2-D maps; other topologies list coordinate→state pairs.
+ *
+ * - **Square** grids render as a compact 2-D character grid.
+ * - **Hex** grids render with the odd-row half-step offset.
+ * - **Triangle** grids render each row as a sequence of `/\` and `\/` glyphs.
+ * - Other topologies list `coordinate → state` pairs.
  */
 fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): String {
     if (cells.isEmpty()) return "(empty grid)"
@@ -54,8 +55,7 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
         null               -> " "
     }
 
-    val sample = cells.keys.first()
-    return when (sample) {
+    return when (cells.keys.first()) {
         is SquareCoordinate -> {
             @Suppress("UNCHECKED_CAST")
             val sq = cells as Map<SquareCoordinate, Cell<SquareCoordinate, D>>
@@ -63,9 +63,8 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
             val rows = sq.keys.map { it.row }
             buildString {
                 for (row in rows.min()..rows.max()) {
-                    for (col in cols.min()..cols.max()) {
+                    for (col in cols.min()..cols.max())
                         append(sq[SquareCoordinate(col, row)]?.state.glyph())
-                    }
                     append('\n')
                 }
             }.trimEnd()
@@ -88,9 +87,29 @@ fun <C : GridCoordinate, Dir : GridDirection, D> Grid<C, Dir, D>.toAsciiMap(): S
             }.trimEnd()
         }
 
+        is TriangleCoordinate -> {
+            @Suppress("UNCHECKED_CAST")
+            val tri = cells as Map<TriangleCoordinate, Cell<TriangleCoordinate, D>>
+            val cols = tri.keys.map { it.col }
+            val rows = tri.keys.map { it.row }
+            buildString {
+                for (row in rows.min()..rows.max()) {
+                    for (col in cols.min()..cols.max()) {
+                        val cell = tri[TriangleCoordinate(col, row)]
+                        val isUp = col % 2 == 0
+                        append(when (cell?.state) {
+                            CellState.Blocked  -> if (isUp) "X" else "X"
+                            CellState.Occupied -> if (isUp) "^" else "v"
+                            else               -> if (isUp) "/" else "\\"
+                        })
+                    }
+                    append('\n')
+                }
+            }.trimEnd()
+        }
+
         else -> buildString {
-            cells.entries
-                .sortedWith(compareBy { it.key.toString() })
+            cells.entries.sortedWith(compareBy { it.key.toString() })
                 .forEach { (coord, cell) -> appendLine("$coord → ${cell.state}") }
         }.trimEnd()
     }

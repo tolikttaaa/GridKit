@@ -95,9 +95,9 @@ class PathfindingTest {
 
     @Test
     fun `finds path on triangle grid`() {
-        val grid = TriangleGrid<Nothing>(4, 4)
-        val from = TriangleCoordinate(0, 0, TriangleDirection.UP)
-        val to   = TriangleCoordinate(3, 3, TriangleDirection.DOWN)
+        val grid = TriangleGrid<Nothing>(8, 4)
+        val from = TriangleCoordinate(0, 0)  // even col = UP
+        val to   = TriangleCoordinate(7, 3)  // odd  col = DOWN
         val path = grid.findPath(from, to)
         assertNotNull(path)
         assertEquals(from, path.first())

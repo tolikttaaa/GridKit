@@ -115,11 +115,11 @@ class TriangleGridBuilder<D>(private val grid: TriangleGrid<D>) {
  * ```
  */
 fun <D> triangleGrid(
-    width: Int,
-    height: Int,
+    cols: Int,
+    rows: Int,
     init: TriangleGridBuilder<D>.() -> Unit = {}
 ): TriangleGrid<D> {
-    val grid = TriangleGrid<D>(width, height)
+    val grid = TriangleGrid<D>(cols, rows)
     TriangleGridBuilder(grid).init()
     return grid
 }
