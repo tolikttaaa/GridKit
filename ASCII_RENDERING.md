@@ -2,7 +2,7 @@
 
 `Grid.toAsciiString()` renders grids as ASCII art for console output or any
 other string-based display. It is GridKit's first renderer and the reference
-visualization for square, hexagonal, and triangular grids.
+visualization for square, hexagonal, triangular, and diamond grids.
 
 The visual style follows these rules:
 
@@ -62,6 +62,7 @@ Example, value `X`:
 - Diagonal edges use `/` and `\`.
 - Width adapts to the value length.
 - Neighboring cells connect edge-to-edge through shared `*` corner characters.
+- Horizontal connector spans expand with the label width.
 - Odd rows follow offset staggering.
 
 Example, value `42`:
@@ -110,14 +111,56 @@ Up-pointing triangle:
 
 ---
 
+## Diamond / Diamond Cells
+
+```text
+  *******
+ /       \
+*  value  *
+ \       /
+  *******
+```
+
+- Top and bottom joints are solid `*` runs.
+- Diagonal edges use `/` and `\`.
+- Width adapts to the value length.
+- Neighboring cells connect through shared `*` joint characters.
+- Horizontal connector spans expand with the label width.
+- Odd rows follow isometric row staggering.
+
+Example, value `X`:
+
+```text
+  ***
+ /   \
+*  X  *
+ \   /
+  ***
+```
+
+Example, a 2x3 diamond grid:
+
+```text
+  ***     ***     ***
+ /   \   /   \   /   \
+*  A  ***  B  ***  C  ***
+ \   /   \   /   \   /   \
+  ***  D  ***  E  ***  F  *
+     \   /   \   /   \   /
+      ***     ***     ***
+```
+
+---
+
 ## Grid Rules
 
 1. Shared edges: adjacent cells share border characters.
 2. Alignment: cells in the same row are horizontally aligned.
 3. Hex staggering: odd rows are offset horizontally.
-4. Value centering: labels are centered in the cell body.
-5. Empty cells: cells with null data render an empty body.
-6. Dynamic width: larger labels expand their column or cell footprint.
+4. Diamond staggering: odd rows are offset horizontally.
+5. Value centering: labels are centered in the cell body.
+6. Empty cells: cells with null data render an empty body.
+7. Dynamic width: larger labels expand their column or cell footprint.
 
 ---
 
@@ -187,4 +230,16 @@ Legend:
 *  M  *-*     *-*     *-*  1  *-*  1  *-*     *-*
  \   /   \   /   \   /   \   /   \   /   \   /
   *-*     *-*     *-*     *-*     *-*     *-*
+```
+
+### Diamond / Diamond Grid
+
+```text
+  ***     ***     ***
+ /   \   /   \   /   \
+*  A  ***  B  ***  C  ***
+ \   /   \   /   \   /   \
+  ***  D  ***  E  ***  F  *
+     \   /   \   /   \   /
+      ***     ***     ***
 ```

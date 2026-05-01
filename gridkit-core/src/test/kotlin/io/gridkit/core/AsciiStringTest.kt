@@ -2,6 +2,7 @@ package io.gridkit.core
 
 import io.gridkit.core.core.*
 import io.gridkit.core.dsl.hexGrid
+import io.gridkit.core.dsl.diamondGrid
 import io.gridkit.core.dsl.squareGrid
 import io.gridkit.core.dsl.triangleGrid
 import org.junit.jupiter.api.Test
@@ -162,6 +163,281 @@ class AsciiStringTest {
     }
 
     @Test
+    fun `two by three diamond grid uses isometric row indentation`() {
+        val grid = diamondGrid<String>(2, 3) {
+            place(DiamondCoordinate(0, 0), data = "A")
+            place(DiamondCoordinate(0, 1), data = "B")
+            place(DiamondCoordinate(0, 2), data = "C")
+            place(DiamondCoordinate(1, 0), data = "D")
+            place(DiamondCoordinate(1, 1), data = "E")
+            place(DiamondCoordinate(1, 2), data = "F")
+        }
+
+        assertEquals(
+            """
+              ***     ***     ***
+             /   \   /   \   /   \
+            *  A  ***  B  ***  C  ***
+             \   /   \   /   \   /   \
+              ***  D  ***  E  ***  F  *
+                 \   /   \   /   \   /
+                  ***     ***     ***
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four diamond grid renders diamond box art`() {
+        val grid = diamondGrid<String>(4, 4) {
+            val labels = listOf(
+                listOf("A", "B", "C", "D"),
+                listOf("E", "F", "G", "H"),
+                listOf("I", "J", "K", "L"),
+                listOf("M", "N", "O", "P")
+            )
+            labels.forEachIndexed { row, values ->
+                values.forEachIndexed { col, value ->
+                    place(DiamondCoordinate(row, col), data = value)
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              ***     ***     ***     ***
+             /   \   /   \   /   \   /   \
+            *  A  ***  B  ***  C  ***  D  ***
+             \   /   \   /   \   /   \   /   \
+              ***  E  ***  F  ***  G  ***  H  *
+             /   \   /   \   /   \   /   \   /
+            *  I  ***  J  ***  K  ***  L  ***
+             \   /   \   /   \   /   \   /   \
+              ***  M  ***  N  ***  O  ***  P  *
+                 \   /   \   /   \   /   \   /
+                  ***     ***     ***     ***
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four square grid expands for long values`() {
+        val grid = squareGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(SquareCoordinate(col, row), data = LONG_VALUE)
+                }
+            }
+        }
+
+        assertEquals(
+            """
+            *--------------*--------------*--------------*--------------*
+            |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |
+            *--------------*--------------*--------------*--------------*
+            |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |
+            *--------------*--------------*--------------*--------------*
+            |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |
+            *--------------*--------------*--------------*--------------*
+            |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |  LONG_VALUE  |
+            *--------------*--------------*--------------*--------------*
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four hex grid expands for long values`() {
+        val grid = hexGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(HexCoordinate(row, col), data = LONG_VALUE)
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              *----------*              *----------*              *----------*              *----------*
+             /            \            /            \            /            \            /            \
+            *  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*
+             \            /            \            /            \            /            \            /            \
+              *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *
+             /            \            /            \            /            \            /            \            /
+            *  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*
+             \            /            \            /            \            /            \            /            \
+              *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *----------*  LONG_VALUE  *
+                          \            /            \            /            \            /            \            /
+                           *----------*              *----------*              *----------*              *----------*
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four triangle grid expands for long values`() {
+        val grid = triangleGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(TriangleCoordinate(col, row), data = LONG_VALUE)
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              **************----------------**************----------------*
+             /  LONG_VALUE  \  LONG_VALUE  /  LONG_VALUE  \  LONG_VALUE  /
+            *----------------**************----------------**************
+             \  LONG_VALUE  /  LONG_VALUE  \  LONG_VALUE  /  LONG_VALUE  \
+              **************----------------**************----------------*
+             /  LONG_VALUE  \  LONG_VALUE  /  LONG_VALUE  \  LONG_VALUE  /
+            *----------------**************----------------**************
+             \  LONG_VALUE  /  LONG_VALUE  \  LONG_VALUE  /  LONG_VALUE  \
+              **************----------------**************----------------*
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four diamond grid expands for long values`() {
+        val grid = diamondGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(DiamondCoordinate(row, col), data = LONG_VALUE)
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              ************              ************              ************              ************
+             /            \            /            \            /            \            /            \
+            *  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  ************
+             \            /            \            /            \            /            \            /            \
+              ************  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  *
+             /            \            /            \            /            \            /            \            /
+            *  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  ************
+             \            /            \            /            \            /            \            /            \
+              ************  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  ************  LONG_VALUE  *
+                          \            /            \            /            \            /            \            /
+                           ************              ************              ************              ************
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four square grid expands for coordinate-sized values`() {
+        val grid = squareGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(SquareCoordinate(col, row), data = coordinateSizedValue(row, col))
+                }
+            }
+        }
+
+        assertEquals(
+            """
+            *----------*-----------*------------*-------------*
+            |   r_c    |   r_cc    |   r_ccc    |   r_cccc    |
+            *----------*-----------*------------*-------------*
+            |   rr_c   |   rr_cc   |   rr_ccc   |   rr_cccc   |
+            *----------*-----------*------------*-------------*
+            |  rrr_c   |  rrr_cc   |  rrr_ccc   |  rrr_cccc   |
+            *----------*-----------*------------*-------------*
+            |  rrrr_c  |  rrrr_cc  |  rrrr_ccc  |  rrrr_cccc  |
+            *----------*-----------*------------*-------------*
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four hex grid expands for coordinate-sized values`() {
+        val grid = hexGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(HexCoordinate(row, col), data = coordinateSizedValue(row, col))
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              *------*           *-------*            *--------*             *---------*
+             /        \         /         \          /          \           /           \
+            *   r_c    *-------*   r_cc    *--------*   r_ccc    *---------*   r_cccc    *---------*
+             \        /         \         /          \          /           \           /           \
+              *------*   rr_c    *-------*   rr_cc    *--------*   rr_ccc    *---------*   rr_cccc   *
+             /        \         /         \          /          \           /           \           /
+            *  rrr_c   *-------*  rrr_cc   *--------*  rrr_ccc   *---------*  rrr_cccc   *---------*
+             \        /         \         /          \          /           \           /           \
+              *------*  rrrr_c   *-------*  rrrr_cc   *--------*  rrrr_ccc   *---------*  rrrr_cccc  *
+                      \         /         \          /          \           /           \           /
+                       *-------*           *--------*            *---------*             *---------*
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four triangle grid expands for coordinate-sized values`() {
+        val grid = triangleGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(TriangleCoordinate(col, row), data = coordinateSizedValue(row, col))
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              **********-------------************---------------*
+             /   r_c    \   r_cc    /   r_ccc    \   r_cccc    /
+            *------------***********--------------*************
+             \   rr_c   /   rr_cc   \   rr_ccc   /   rr_cccc   \
+              **********-------------************---------------*
+             /  rrr_c   \  rrr_cc   /  rrr_ccc   \  rrr_cccc   /
+            *------------***********--------------*************
+             \  rrrr_c  /  rrrr_cc  \  rrrr_ccc  /  rrrr_cccc  \
+              **********-------------************---------------*
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
+    fun `four by four diamond grid expands for coordinate-sized values`() {
+        val grid = diamondGrid<String>(4, 4) {
+            for (row in 0 until 4) {
+                for (col in 0 until 4) {
+                    place(DiamondCoordinate(row, col), data = coordinateSizedValue(row, col))
+                }
+            }
+        }
+
+        assertEquals(
+            """
+              ********           *********            **********             ***********
+             /        \         /         \          /          \           /           \
+            *   r_c    *********   r_cc    **********   r_ccc    ***********   r_cccc    ***********
+             \        /         \         /          \          /           \           /           \
+              ********   rr_c    *********   rr_cc    **********   rr_ccc    ***********   rr_cccc   *
+             /        \         /         \          /          \           /           \           /
+            *  rrr_c   *********  rrr_cc   **********  rrr_ccc   ***********  rrr_cccc   ***********
+             \        /         \         /          \          /           \           /           \
+              ********  rrrr_c   *********  rrrr_cc   **********  rrrr_ccc   ***********  rrrr_cccc  *
+                      \         /         \          /          \           /           \           /
+                       *********           **********            ***********             ***********
+            """.trimIndent(),
+            grid.toAsciiString()
+        )
+    }
+
+    @Test
     fun `complex square minesweeper grid renders shared box art`() {
         val grid = squareGrid<String>(4, 4) {
             place(SquareCoordinate(0, 0), data = "M")
@@ -285,4 +561,12 @@ class AsciiStringTest {
             grid.toAsciiString()
         )
     }
+
+    private companion object {
+        const val LONG_VALUE = "LONG_VALUE"
+
+        fun coordinateSizedValue(row: Int, col: Int): String =
+            "r".repeat(row + 1) + "_" + "c".repeat(col + 1)
+    }
+
 }

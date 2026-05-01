@@ -30,3 +30,11 @@ val TriangleCoordinate.isUp: Boolean get() = col % 2 == 0
 
 /** Returns true when this triangle is DOWN-pointing (odd [TriangleCoordinate.col]). */
 val TriangleCoordinate.isDown: Boolean get() = col % 2 != 0
+
+/**
+ * Coordinate on a diamond grid.
+ *
+ * Cells are arranged in a rotated-square (isometric) layout where each cell is
+ * diamond-shaped.  Negative coordinates are fully valid — the grid is unbounded.
+ */
+data class DiamondCoordinate(val row: Int, val col: Int) : GridCoordinate

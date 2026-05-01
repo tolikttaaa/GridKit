@@ -1,8 +1,8 @@
 package io.gridkit.core
 
 import io.gridkit.core.core.*
+import io.gridkit.core.direction.*
 import io.gridkit.core.dsl.squareGrid
-import io.gridkit.core.grid.SquareDirection
 import io.gridkit.core.grid.SquareGrid
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -51,17 +51,17 @@ class SquareGridTest {
     @Test
     fun `getNeighbor returns correct coordinate`() {
         val grid = SquareGrid<Nothing>(5, 5)
-        assertEquals(SquareCoordinate(2, 1), grid.getNeighbor(SquareCoordinate(2, 2), SquareDirection.UP))
-        assertEquals(SquareCoordinate(2, 3), grid.getNeighbor(SquareCoordinate(2, 2), SquareDirection.DOWN))
-        assertEquals(SquareCoordinate(1, 2), grid.getNeighbor(SquareCoordinate(2, 2), SquareDirection.LEFT))
-        assertEquals(SquareCoordinate(3, 2), grid.getNeighbor(SquareCoordinate(2, 2), SquareDirection.RIGHT))
+        assertEquals(SquareCoordinate(2, 1), grid.getNeighbor(SquareCoordinate(2, 2), SquareEdgeDirection.TOP))
+        assertEquals(SquareCoordinate(2, 3), grid.getNeighbor(SquareCoordinate(2, 2), SquareEdgeDirection.BOTTOM))
+        assertEquals(SquareCoordinate(1, 2), grid.getNeighbor(SquareCoordinate(2, 2), SquareEdgeDirection.LEFT))
+        assertEquals(SquareCoordinate(3, 2), grid.getNeighbor(SquareCoordinate(2, 2), SquareEdgeDirection.RIGHT))
     }
 
     @Test
     fun `getNeighbor returns null at boundary`() {
         val grid = SquareGrid<Nothing>(5, 5)
-        assertNull(grid.getNeighbor(SquareCoordinate(0, 0), SquareDirection.UP))
-        assertNull(grid.getNeighbor(SquareCoordinate(0, 0), SquareDirection.LEFT))
+        assertNull(grid.getNeighbor(SquareCoordinate(0, 0), SquareEdgeDirection.TOP))
+        assertNull(grid.getNeighbor(SquareCoordinate(0, 0), SquareEdgeDirection.LEFT))
     }
 
     @Test
@@ -113,7 +113,7 @@ class SquareGridTest {
     @Test
     fun `placeNext creates new cell`() {
         val grid = SquareGrid<Nothing>(1, 1)
-        val newCell = grid.placeNext(SquareCoordinate(0, 0), SquareDirection.RIGHT)
+        val newCell = grid.placeNext(SquareCoordinate(0, 0), SquareEdgeDirection.RIGHT)
         assertEquals(SquareCoordinate(1, 0), newCell.coordinate)
         assertNotNull(grid.getCell(SquareCoordinate(1, 0)))
     }
@@ -121,16 +121,16 @@ class SquareGridTest {
     @Test
     fun `placeNext is idempotent`() {
         val grid = SquareGrid<Nothing>(3, 3)
-        val first  = grid.placeNext(SquareCoordinate(1, 1), SquareDirection.RIGHT)
-        val second = grid.placeNext(SquareCoordinate(1, 1), SquareDirection.RIGHT)
-        assertEquals(first, second)
+        val first  = grid.placeNext(SquareCoordinate(1, 1), SquareEdgeDirection.RIGHT)
+        val second = grid.placeNext(SquareCoordinate(1, 1), SquareEdgeDirection.RIGHT)
+        assertTrue(first === second)
         assertEquals(SquareCoordinate(2, 1), first.coordinate)
     }
 
     @Test
     fun `placeNext expands bounding box`() {
         val grid = SquareGrid<Nothing>(1, 1)
-        grid.placeNext(SquareCoordinate(0, 0), SquareDirection.DOWN)
+        grid.placeNext(SquareCoordinate(0, 0), SquareEdgeDirection.BOTTOM)
         assertNotNull(grid.getCell(SquareCoordinate(0, 1)))
         assertEquals(2, grid.cells.size)
     }
@@ -154,11 +154,11 @@ class SquareGridTest {
     fun `getDirectedNeighbors returns direction-keyed map`() {
         val grid = SquareGrid<Nothing>(5, 5)
         val map = grid.getDirectedNeighbors(SquareCoordinate(2, 2))
-        assertTrue(SquareDirection.UP in map)
-        assertTrue(SquareDirection.DOWN in map)
-        assertTrue(SquareDirection.LEFT in map)
-        assertTrue(SquareDirection.RIGHT in map)
-        assertEquals(SquareCoordinate(2, 1), map[SquareDirection.UP]?.coordinate)
+        assertTrue(SquareEdgeDirection.TOP in map)
+        assertTrue(SquareEdgeDirection.BOTTOM in map)
+        assertTrue(SquareEdgeDirection.LEFT in map)
+        assertTrue(SquareEdgeDirection.RIGHT in map)
+        assertEquals(SquareCoordinate(2, 1), map[SquareEdgeDirection.TOP]?.coordinate)
     }
 
     @Test
