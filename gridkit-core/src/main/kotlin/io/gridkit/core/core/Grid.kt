@@ -1,34 +1,63 @@
 package io.gridkit.core.core
 
+import io.gridkit.core.topology.Edge
+import io.gridkit.core.topology.Vertex
+
 /**
  * Core abstraction for a tile-based game board.
  *
- * All topology-specific grids (square, hex, triangle) implement this interface,
- * enabling topology-agnostic game logic.
+ * All topology-specific grids (square, hex, triangle, diamond) implement this
+ * interface, enabling topology-agnostic game logic.
  *
  * @param C the coordinate type — must implement [GridCoordinate]
  * @param Dir the direction type — must implement [GridDirection]
  * @param D the optional cell-data payload type
+ * @param CellT the concrete [Cell] implementation stored by this grid
+ * @param EdgeT the concrete [Edge] implementation used by this grid
+ * @param VertexT the concrete [Vertex] implementation used by this grid
  */
-interface Grid<C : GridCoordinate, Dir : GridDirection, D> {
+interface Grid<
+    C : GridCoordinate,
+    Dir : GridDirection,
+    D,
+    CellT : Cell<C, Dir, D>,
+    EdgeT : Edge<D>,
+    VertexT : Vertex<D>
+> {
 
     /** All cells in the grid, keyed by their coordinate. */
-    val cells: Map<C, Cell<C, D>>
+    val cells: Map<C, CellT>
+
+    /** All shared edges currently referenced by this grid's cells. */
+    val edges: Set<EdgeT>
+        get() {
+            // Grid implementations guarantee their cells are wired with the matching EdgeT type.
+            @Suppress("UNCHECKED_CAST")
+            return cells.values.flatMap { it.edges.values }.map { it as EdgeT }.toSet()
+        }
+
+    /** All shared vertices currently referenced by this grid's cells. */
+    val vertices: Set<VertexT>
+        get() {
+            // Grid implementations guarantee their cells are wired with the matching VertexT type.
+            @Suppress("UNCHECKED_CAST")
+            return cells.values.flatMap { it.vertices.values }.map { it as VertexT }.toSet()
+        }
 
     /** Returns the cell at [coordinate], or null if it does not exist. */
-    fun getCell(coordinate: C): Cell<C, D>?
+    fun getCell(coordinate: C): CellT?
 
     /**
      * Returns all cells directly adjacent to [coordinate] as an unordered list.
      * Cells at the edge of the grid have fewer neighbors than interior cells.
      */
-    fun getNeighbors(coordinate: C): List<Cell<C, D>>
+    fun getNeighbors(coordinate: C): List<CellT>
 
     /**
      * Returns all existing neighbors keyed by their named direction.
      * Directions whose target coordinate does not exist are absent from the map.
      */
-    fun getDirectedNeighbors(coordinate: C): Map<Dir, Cell<C, D>>
+    fun getDirectedNeighbors(coordinate: C): Map<Dir, CellT>
 
     /**
      * Returns the coordinate of the neighbor in [direction] from [coordinate],
@@ -50,26 +79,26 @@ interface Grid<C : GridCoordinate, Dir : GridDirection, D> {
     fun findPath(
         from: C,
         to: C,
-        passable: (Cell<C, D>) -> Boolean = { true }
+        passable: (CellT) -> Boolean = { true }
     ): List<C>?
 
     /**
      * Returns all cells within [radius] steps of [center],
      * including [center] itself (radius 0).
      */
-    fun getRange(center: C, radius: Int): List<Cell<C, D>>
+    fun getRange(center: C, radius: Int): List<CellT>
 
     /**
      * Returns all cells forming the shortest straight line from [from] to [to],
      * both endpoints inclusive.
      */
-    fun getLine(from: C, to: C): List<Cell<C, D>>
+    fun getLine(from: C, to: C): List<CellT>
 
     /**
      * Returns all cells exactly [radius] steps away from [center]
      * (i.e. the perimeter of the range disc, excluding the interior).
      */
-    fun getRing(center: C, radius: Int): List<Cell<C, D>>
+    fun getRing(center: C, radius: Int): List<CellT>
 
     /** Returns the grid-distance (in steps) between [from] and [to]. */
     fun distance(from: C, to: C): Int
@@ -78,9 +107,11 @@ interface Grid<C : GridCoordinate, Dir : GridDirection, D> {
      * Places a new cell adjacent to [from] in the given [direction], or returns
      * the existing cell if the target coordinate is already present (idempotent).
      *
+     * Correctly links shared [io.gridkit.core.topology.Vertex] and
+     * [io.gridkit.core.topology.Edge] objects with all existing neighbors.
      * Expands the grid's bounding box when the new coordinate lies outside it.
      */
-    fun placeNext(from: C, direction: Dir): Cell<C, D>
+    fun placeNext(from: C, direction: Dir): CellT
 
     /**
      * Returns the coordinate closest to the geometric centre of the
